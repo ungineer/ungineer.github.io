@@ -62,6 +62,9 @@
           transform: rotate(360deg);
         }
       }
+      .error {
+        color: rgb(207, 127, 0);
+      }
     </style>
   </head>
   <body>
@@ -77,6 +80,7 @@
       </div>
       <div class="result">
         <h2 v-if="chatId">Chat ID: {{ chatId }}</h2>
+        <h3 v-if="error" class="error">{{error}}</h3>
         <div class="loading" v-show="loading">
             <div class="lds-dual-ring"></div>
         </div>
@@ -92,10 +96,12 @@
             token: "",
             chatId: "",
             loading:false,
+            error: '',
           };
         },
         methods: {
           async getChatId() {
+            this.error = '';
             this.loading = true;
             this.chatId = '';
             const { token } = this;
@@ -106,9 +112,12 @@
               const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates`);
               const { result } = await res.json();
               this.chatId = result[0].message.chat.id;
-              this.loading = false;
-            }
-            catch (e) {
+              if (!this.chatId) {
+                this.error = 'Cannot get Chat ID. Check your token and send a message in your chat.';
+              }
+            } catch (e) {
+              this.error = 'Cannot get Chat ID. Check your token and send a message in your chat.';
+            } finally {
               this.loading = false;
             }
           },
